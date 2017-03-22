@@ -40,9 +40,9 @@ void fastModuloPow(vU1024 *base, vU1024 *power, vU1024 *modulo, vU1024 *result) 
         internalBase = newBase;
         
         if (willDoModulo) {
-            vU1024 newResult;
-            vU1024Mod(&internalResult, modulo, &newResult);
-            internalResult = newResult;
+            vU1024 newBase;
+            vU1024Mod(&internalBase, modulo, &newBase);
+            internalBase = newBase;
         }
     }
     
