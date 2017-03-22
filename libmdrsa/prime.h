@@ -10,5 +10,9 @@
 #define prime_h
 
 #include <stdio.h>
+#include <Accelerate/Accelerate.h>
+
+void fastModuloPow(vU1024 *base, vU1024 *power, vU1024 *modulo, vU1024 *result);
+bool fermatTest(vU1024 *a, vU1024 *p);
 
 #endif /* prime_h */
