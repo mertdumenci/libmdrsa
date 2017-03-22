@@ -15,6 +15,7 @@
 bool bignum_equal(vU1024 *a, vU1024 *b);
 bool bignum_isZero(vU1024 *bignum);
 bool bignum_isOdd(vU1024 *bignum);
+char *bignum_toString(vU1024 *bignum);
 void bignum_printContents(vU1024 *bignum);
 vU1024 bignum_from64(uint64_t integer);
 vU1024 bignum_rand(int digits);
