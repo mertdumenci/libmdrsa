@@ -77,7 +77,7 @@ bool isPrime(vU1024 *candidate, int numDigits) {
 }
 
 vU1024 generatePrime(int numDigits) {
-    int testCounter = numDigits * 10;
+    int testCounter = numDigits * (numDigits / 2);
     
     while (testCounter > 0) {
         vU1024 candidate = bignum_rand(numDigits);
