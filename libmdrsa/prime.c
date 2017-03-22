@@ -61,38 +61,34 @@ bool fermatTest(vU1024 *a, vU1024 *p) {
     return bignum_equal(&result, &one);
 }
 
-//func fermatTest(a: UInt64, p: UInt64) -> Bool {
-//    return (power(base: a, power: p - 1, modulo: p)) == 1
-//    }
-//    
-//    func isPrime(candidate: UInt64) -> Bool {
-//        var primeCounter = UInt64(log10(Double(candidate)) * 5)
-//        
-//        while primeCounter > 0 {
-//            let randomBase = random(to: candidate)
-//            if !fermatTest(a: randomBase, p: candidate) {
-//                return false
-//            }
-//            
-//            primeCounter -= 1
-//        }
-//        
-//        return true
-//    }
-//    
-//    func generatePrime(digits: UInt64) -> UInt64 {
-//        var primeCounter = digits * 10
-//        let upperBound = power(base: 10, power: digits, modulo: nil)
-//        
-//        while primeCounter > 0 {
-//            let candidate = random(to: upperBound)
-//            
-//            if isPrime(candidate: candidate) {
-//                return candidate
-//            }
-//            
-//            primeCounter -= 1
-//        }
-//        
-//        fatalError("Couldn't find prime")
-//    }
+bool isPrime(vU1024 *candidate, int numDigits) {
+    int testCounter = numDigits * 5;
+    
+    while (testCounter > 0) {
+        vU1024 random = bignum_rand(numDigits - 1); // stupid hack, but so many digits I think we'll be fine
+        if (!fermatTest(&random, candidate)) {
+            return false;
+        }
+        
+        testCounter -= 1;
+    }
+    
+    return true;
+}
+
+vU1024 generatePrime(int numDigits) {
+    int testCounter = numDigits * 10;
+    
+    while (testCounter > 0) {
+        vU1024 candidate = bignum_rand(numDigits);
+        
+        if (isPrime(&candidate, numDigits)) {
+            return candidate;
+        }
+        
+        testCounter -= 1;
+    }
+    
+    printf("Fatal error, cannot generate prime");
+    exit(-1);
+}
