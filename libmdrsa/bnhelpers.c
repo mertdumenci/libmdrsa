@@ -72,8 +72,9 @@ vU1024 bignum_from64(uint64_t integer) {
 }
 
 vU1024 bignum_rand(int digits) {
-    int bits = (int)ceil(digits * log2(10));
+    int bits = (int)ceil((digits - 1) * log2(10));
     vU1024 rand;
+    memset(&rand, 0, sizeof(vU1024));
     arc4random_buf(&rand, bits / 8);
     return rand;
 }
