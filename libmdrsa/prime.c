@@ -65,8 +65,12 @@ bool isPrime(vU1024 *candidate, int numDigits) {
     int testCounter = numDigits * 5;
     
     while (testCounter > 0) {
-        vU1024 random = bignum_rand(numDigits - 1); // stupid hack, but so many digits I think we'll be fine
-        if (!fermatTest(&random, candidate)) {
+        // TODO: Rework the random number generator to allow upper boundaries.
+        //
+        // We know that a number of `numDigits - 1` digits will be less than `p`,
+        // thus we generate a random number of `numDigits - 1` digits.
+        vU1024 randomA = bignum_rand(numDigits - 1);
+        if (!fermatTest(&randomA, candidate)) {
             return false;
         }
         
