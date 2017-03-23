@@ -23,6 +23,10 @@ bool bignum_isOdd(vU1024 *bignum) {
 }
 
 char *bignum_toString(vU1024 *bignum) {
+    if (bignum_isZero(bignum)) {
+        return "0";
+    }
+    
     list(int, digitList);
     memset(&digitList, 0, sizeof(digitList));
     
