@@ -10,5 +10,8 @@
 #define rsa_h
 
 #include <stdio.h>
+#include "prime.h"
+
+void generateKeys(vU1024 *pubE, vU1024 *pubA, vU1024 *pubD);
 
 #endif /* rsa_h */
