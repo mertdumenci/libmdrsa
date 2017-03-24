@@ -22,7 +22,8 @@
 void fastModuloPow(vU1024 *base, vU1024 *power, vU1024 *modulo, vU1024 *result);
 
 /*
-    Applies the Fermat probable prime test with a given base `a` and power `p`. 
+    Applies the Fermat probable primality test with a given base `a` and
+    power `p`.
     
     Returns true if a^(p - 1) ≡ 1 (mod p). (p is a Fermat probable prime).
  
@@ -54,7 +55,7 @@ bool fermatTest(vU1024 *a, vU1024 *p);
 bool isPrime(vU1024 *candidate, int numDigits);
 
 /*
-    Generates [Fermat probable] primes in the given number of digits
+    Finds [Fermat probable] primes in the given number of digits
     (sort of[1]).
  
     Since primes are roughly log(n) numbers apart from each other, and log(n)
@@ -65,6 +66,6 @@ bool isPrime(vU1024 *candidate, int numDigits);
     Chances are the significant bits are going to be non-zero, hence the number
     will be ~numDigits digits.
 */
-vU1024 generatePrime(int numDigits);
+vU1024 findPrime(int numDigits);
 
 #endif /* prime_h */

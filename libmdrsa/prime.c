@@ -80,7 +80,7 @@ bool isPrime(vU1024 *candidate, int numDigits) {
     return true;
 }
 
-vU1024 generatePrime(int numDigits) {
+vU1024 findPrime(int numDigits) {
     int testCounter = numDigits * (numDigits / 2);
     
     while (testCounter > 0) {
