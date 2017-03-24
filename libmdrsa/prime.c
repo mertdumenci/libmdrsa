@@ -7,19 +7,43 @@
 //
 
 #include "prime.h"
-#include "bnhelpers.h"
+#include "bignum.h"
 
-void fastModuloPow(vU1024 *base, vU1024 *power, vU1024 *modulo, vU1024 *result) {
-    bool willDoModulo = !bignum_isZero(modulo);
-    vU1024 internalResult = bignum_from64(1);
+/*
+    Applies the Fermat probable primality test with a given base `a` and
+    power `p`.
+
+    Returns true if a^(p - 1) ≡ 1 (mod p). (p is a Fermat probable prime).
+
+    This function by itself should not be used for primality testing because of
+    the high occurence of Fermat pseudoprimes--see `MDRSAFermatPrimalityTest`
+    for an algorithm that makes use of this to test for primality with high
+    confidence.
+ */
+bool _MDRSAFermatPrimalityTest(vU1024 *a, vU1024 *p) {
+    vU1024 result;
+    vU1024 power;
+
+    vU1024 one = MDRSABignumFromInteger(1);
+    vU1024Sub(p, &one, &power); // power = p - 1
+
+    MDRSAFastModuloPow(a, &power, p, &result);
+
+    return MDRSABignumEqual(&result, &one);
+}
+
+void MDRSAFastModuloPow(vU1024 *base, vU1024 *power,
+        vU1024 *modulo, vU1024 *result) {
+    bool willDoModulo = !MDRSABignumIsZero(modulo);
+    vU1024 internalResult = MDRSABignumFromInteger(1);
     vU1024 internalPower;
     vU1024 internalBase;
     
     memcpy(&internalPower, power, sizeof(vU1024));
     memcpy(&internalBase, base, sizeof(vU1024));
     
-    while (!bignum_isZero(&internalPower)) {
-        if (bignum_isOdd(&internalPower)) {
+    while (!MDRSABignumIsZero(&internalPower)) {
+        if (MDRSABignumIsOdd(&internalPower)) {
             vU1024 newResult;
             vU1024HalfMultiply(&internalResult, &internalBase, &newResult);
             internalResult = newResult;
@@ -49,19 +73,7 @@ void fastModuloPow(vU1024 *base, vU1024 *power, vU1024 *modulo, vU1024 *result) 
     memcpy(result, &internalResult, sizeof(vU1024));
 }
 
-bool fermatTest(vU1024 *a, vU1024 *p) {
-    vU1024 result;
-    vU1024 power;
-    
-    vU1024 one = bignum_from64(1);
-    vU1024Sub(p, &one, &power); // power = p - 1
-    
-    fastModuloPow(a, &power, p, &result);
-    
-    return bignum_equal(&result, &one);
-}
-
-bool isPrime(vU1024 *candidate, int numDigits) {
+bool MDRSAFermatPrimalityTest(vU1024 *candidate, int numDigits) {
     int testCounter = numDigits * 5;
     
     while (testCounter > 0) {
@@ -69,8 +81,8 @@ bool isPrime(vU1024 *candidate, int numDigits) {
         //
         // We know that a number of `numDigits - 1` digits will be less than `p`,
         // thus we generate a random number of `numDigits - 1` digits.
-        vU1024 randomA = bignum_rand(numDigits - 1);
-        if (!fermatTest(&randomA, candidate)) {
+        vU1024 randomA = MDRSABignumRand(numDigits - 1);
+        if (!_MDRSAFermatPrimalityTest(&randomA, candidate)) {
             return false;
         }
         
@@ -80,13 +92,13 @@ bool isPrime(vU1024 *candidate, int numDigits) {
     return true;
 }
 
-vU1024 findPrime(int numDigits) {
+vU1024 MDRSAFindPrime(int numDigits) {
     int testCounter = numDigits * (numDigits / 2);
     
     while (testCounter > 0) {
-        vU1024 candidate = bignum_rand(numDigits);
+        vU1024 candidate = MDRSABignumRand(numDigits);
         
-        if (isPrime(&candidate, numDigits)) {
+        if (MDRSAFermatPrimalityTest(&candidate, numDigits)) {
             return candidate;
         }
         

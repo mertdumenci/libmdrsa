@@ -7,7 +7,7 @@
 //
 
 #include <stdio.h>
-#include "bnhelpers.h"
+#include "bignum.h"
 #include "prime.h"
 #include "rsa.h"
 
@@ -28,25 +28,25 @@ char *decodeString(vU1024 *encodedString) {
 
 int main(int argc, const char * argv[]) {
     MDRSAKeyPair keyPair;
-    generateKeys(&keyPair);
+    MDRSAGenerateKeys(&keyPair);
     
-    char *stringPayload = "Testing RSA encryption. Yay!";
+    char *stringPayload = "Hello world!";
     vU1024 payload = encodeString(stringPayload);
     
     vU1024 encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);
     vU1024 decrypted = MDRSADecrypt(&encrypted, &keyPair);
     
-    if (bignum_equal(&payload, &decrypted)) {
-        printf("Success! Initial payload and RSA encrypted -> decrypted "
-               "payload match.\n");
+    if (MDRSABignumEqual(&payload, &decrypted)) {
+        printf("Success! Initial and roundtrip RSA payloads match.\n");
         
+        // Treat 'encrypted' as a string for demonstration purposes
         char *encryptedString = malloc(sizeof(encrypted) + sizeof(char));
         memcpy(encryptedString, &encrypted, sizeof(encrypted));
         encryptedString[sizeof(encrypted) / sizeof(char)] = '\0';
         
-        printf("Initial payload: %s\n", stringPayload);
-        printf("Encrypted payload: %s\n", encryptedString);
-        printf("Decrypted payload: %s\n", decodeString(&decrypted));
+        printf("Initial payload: \"%s\"\n", stringPayload);
+        printf("Encrypted payload: \"%s\"\n", encryptedString);
+        printf("Decrypted payload: \"%s\"\n", decodeString(&decrypted));
     }
     
     return 0;

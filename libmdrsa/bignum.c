@@ -1,46 +1,46 @@
 //
-//  bnhelpers.c
+//  bignum.c
 //  libmdrsa
 //
 //  Created by Mert Dümenci on 3/17/17.
 //  Copyright © 2017 Mert Dümenci. All rights reserved.
 //
 
-#include "bnhelpers.h"
+#include "bignum.h"
 #include "list.h"
 
-bool bignum_equal(vU1024 *a, vU1024 *b) {
+bool MDRSABignumEqual(vU1024 *a, vU1024 *b) {
     return (memcmp(a, b, sizeof(vU1024)) == 0);
 }
 
-bool bignum_signedEqual(vS1024 *a, vS1024 *b) {
+bool MDRSABignumSignedEqual(vS1024 *a, vS1024 *b) {
     return (memcmp(a, b, sizeof(vS1024)) == 0);
 }
 
-bool bignum_isZero(vU1024 *bignum) {
-    vU1024 zero = bignum_from64(0);
-    return bignum_equal(bignum, &zero);
+bool MDRSABignumIsZero(vU1024 *bignum) {
+    vU1024 zero = MDRSABignumFromInteger(0);
+    return MDRSABignumEqual(bignum, &zero);
 }
 
-bool bignum_isOdd(vU1024 *bignum) {
+bool MDRSABignumIsOdd(vU1024 *bignum) {
     return (bignum->s.LSW & 0x1) != 0;
 }
 
-char *bignum_toString(vU1024 *bignum) {
-    if (bignum_isZero(bignum)) {
+char *MDRSABignumToString(vU1024 *bignum) {
+    if (MDRSABignumIsZero(bignum)) {
         return "0";
     }
     
     list(int, digitList);
     memset(&digitList, 0, sizeof(digitList));
     
-    vU1024 zero = bignum_from64(0);
-    vU1024 ten = bignum_from64(10);
+    vU1024 zero = MDRSABignumFromInteger(0);
+    vU1024 ten = MDRSABignumFromInteger(10);
     
     vU1024 intermediate;
     memcpy(&intermediate, bignum, sizeof(vU1024));
 
-    while (!bignum_equal(&intermediate, &zero)) {
+    while (!MDRSABignumEqual(&intermediate, &zero)) {
         vU1024 newIntermediate;
         vU1024 digit;
         vU1024Divide(&intermediate, &ten, &newIntermediate, &digit);
@@ -65,14 +65,14 @@ char *bignum_toString(vU1024 *bignum) {
     return string;
 }
 
-char *bignum_signedToString(vS1024 *bignum) {
-    bool isNegative = bignum_signedIsNegative(bignum);
+char *MDRSABignumSignedToString(vS1024 *bignum) {
+    bool isNegative = MDRSABignumSignedIsNegative(bignum);
     
     vU1024 positive;
     
     if (!isNegative) {
         memcpy(&positive, bignum, sizeof(vS1024));
-        return bignum_toString(&positive);
+        return MDRSABignumToString(&positive);
     }
     
     vU1024 unsignedBignum;
@@ -82,7 +82,7 @@ char *bignum_signedToString(vS1024 *bignum) {
     // since it takes an unsigned number and outputs an unsigned number...
     vU1024Neg(&unsignedBignum, &positive);
     
-    char *positiveRepresentation = bignum_toString(&positive);
+    char *positiveRepresentation = MDRSABignumToString(&positive);
     char *string = malloc(sizeof(char) + sizeof(positiveRepresentation));
     strcpy(string + 1, positiveRepresentation);
     string[0] = '-';
@@ -90,12 +90,12 @@ char *bignum_signedToString(vS1024 *bignum) {
     return string;
 }
 
-void bignum_printContents(vU1024 *bignum) {
-    char *string = bignum_toString(bignum);
+void MDRSABignumPrint(vU1024 *bignum) {
+    char *string = MDRSABignumToString(bignum);
     printf("%s\n", string);
 }
 
-vU1024 bignum_from64(uint64_t integer) {
+vU1024 MDRSABignumFromInteger(uint64_t integer) {
     vU1024 bignum;
     memset(&bignum, 0, sizeof(vU1024));
     memcpy(&bignum, &integer, sizeof(uint64_t));
@@ -103,7 +103,7 @@ vU1024 bignum_from64(uint64_t integer) {
     return bignum;
 }
 
-vS1024 bignum_signedFrom64(int64_t integer) {
+vS1024 MDRSABignumSignedFromInteger(int64_t integer) {
     bool isNegative = (integer < 0);
     
     vS1024 bignum;
@@ -118,7 +118,7 @@ vS1024 bignum_signedFrom64(int64_t integer) {
     return bignum;
 }
 
-vU1024 bignum_rand(int digits) {
+vU1024 MDRSABignumRand(int digits) {
     int bits = (int)ceil((digits - 1) * log2(10));
     vU1024 rand;
     memset(&rand, 0, sizeof(vU1024));
@@ -126,15 +126,15 @@ vU1024 bignum_rand(int digits) {
     return rand;
 }
 
-vS1024 bignum_signed(vU1024 *unsignedBignum) {
+vS1024 MDRSABignumCastSigned(vU1024 *unsignedBignum) {
     vS1024 signedBignum;
     memcpy(&signedBignum, unsignedBignum, sizeof(vU1024));
     
     return signedBignum;
 }
 
-vU1024 bignum_unsigned(vS1024 *signedBignum) {
-    assert(!bignum_signedIsNegative(signedBignum));
+vU1024 MDRSABignumCastUnsigned(vS1024 *signedBignum) {
+    assert(!MDRSABignumSignedIsNegative(signedBignum));
     
     vU1024 unsignedBignum;
     memcpy(&unsignedBignum, signedBignum, sizeof(vS1024));
@@ -142,6 +142,6 @@ vU1024 bignum_unsigned(vS1024 *signedBignum) {
     return unsignedBignum;
 }
 
-bool bignum_signedIsNegative(vS1024 *bignum) {
+bool MDRSABignumSignedIsNegative(vS1024 *bignum) {
     return (bignum->s.MSW & 0x10000000) != 0;
 }

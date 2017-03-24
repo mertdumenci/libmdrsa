@@ -26,7 +26,7 @@ typedef struct MDRSAKeyPair {
     MDRSAPrivateKey privateKey;
 } MDRSAKeyPair;
 
-void generateKeys(MDRSAKeyPair *keyPair);
+void MDRSAGenerateKeys(MDRSAKeyPair *keyPair);
 vU1024 MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey);
 vU1024 MDRSADecrypt(vU1024 *encryptedPayload, MDRSAKeyPair *keyPair);
 

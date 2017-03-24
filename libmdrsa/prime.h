@@ -19,19 +19,7 @@
     really big (150-digit big) powers. Uses Accelerate for highly performant,
     vectorized arithmetic operations.
  */
-void fastModuloPow(vU1024 *base, vU1024 *power, vU1024 *modulo, vU1024 *result);
-
-/*
-    Applies the Fermat probable primality test with a given base `a` and
-    power `p`.
-    
-    Returns true if a^(p - 1) ≡ 1 (mod p). (p is a Fermat probable prime).
- 
-    This function by itself should not be used for primality testing because of
-    the high occurence of Fermat pseudoprimes--see `isPrime` for an algorithm
-    that makes use of this to test for primality with high confidence.
- */
-bool fermatTest(vU1024 *a, vU1024 *p);
+void MDRSAFastModuloPow(vU1024 *base, vU1024 *power, vU1024 *modulo, vU1024 *result);
 
 /*
     Probabilistically checks if the given number is a prime (or a Carmichael 
@@ -52,7 +40,7 @@ bool fermatTest(vU1024 *a, vU1024 *p);
     project. I can actually understand how this test works, and I wanted to
     implement it myself.
  */
-bool isPrime(vU1024 *candidate, int numDigits);
+bool MDRSAFermatPrimalityTest(vU1024 *candidate, int numDigits);
 
 /*
     Finds [Fermat probable] primes in the given number of digits
@@ -62,10 +50,10 @@ bool isPrime(vU1024 *candidate, int numDigits);
     is the number of digits of n, we generate k * numDigits random numbers, and
     test them for primality. We return if we hit a prime.
  
-    [1]: `bignum_rand` fills out log_2(10^numDigits) bits with random data.
+    [1]: `MDRSABignumRand` fills out log_2(10^numDigits) bits with random data.
     Chances are the significant bits are going to be non-zero, hence the number
     will be ~numDigits digits.
 */
-vU1024 findPrime(int numDigits);
+vU1024 MDRSAFindPrime(int numDigits);
 
 #endif /* prime_h */

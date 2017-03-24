@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		41888B211E7BF2F00068EA86 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 41888B201E7BF2F00068EA86 /* main.c */; };
 		41888B291E7BF2FC0068EA86 /* prime.c in Sources */ = {isa = PBXBuildFile; fileRef = 41888B271E7BF2FC0068EA86 /* prime.c */; };
-		41888B2C1E7C3D130068EA86 /* bnhelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = 41888B2A1E7C3D130068EA86 /* bnhelpers.c */; };
+		41888B2C1E7C3D130068EA86 /* bignum.c in Sources */ = {isa = PBXBuildFile; fileRef = 41888B2A1E7C3D130068EA86 /* bignum.c */; };
 		41CCBB681E835EF10075E4F1 /* rsa.c in Sources */ = {isa = PBXBuildFile; fileRef = 41CCBB661E835EF10075E4F1 /* rsa.c */; };
 		41E1823B1E823DB00094E85F /* list.c in Sources */ = {isa = PBXBuildFile; fileRef = 41E1823A1E823DB00094E85F /* list.c */; };
 /* End PBXBuildFile section */
@@ -31,8 +31,8 @@
 		41888B201E7BF2F00068EA86 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		41888B271E7BF2FC0068EA86 /* prime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = prime.c; sourceTree = "<group>"; };
 		41888B281E7BF2FC0068EA86 /* prime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prime.h; sourceTree = "<group>"; };
-		41888B2A1E7C3D130068EA86 /* bnhelpers.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bnhelpers.c; sourceTree = "<group>"; };
-		41888B2B1E7C3D130068EA86 /* bnhelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bnhelpers.h; sourceTree = "<group>"; };
+		41888B2A1E7C3D130068EA86 /* bignum.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bignum.c; sourceTree = "<group>"; };
+		41888B2B1E7C3D130068EA86 /* bignum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bignum.h; sourceTree = "<group>"; };
 		41CCBB661E835EF10075E4F1 /* rsa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rsa.c; sourceTree = "<group>"; };
 		41CCBB671E835EF10075E4F1 /* rsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rsa.h; sourceTree = "<group>"; };
 		41E182371E823B120094E85F /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
@@ -74,8 +74,8 @@
 				41888B201E7BF2F00068EA86 /* main.c */,
 				41888B281E7BF2FC0068EA86 /* prime.h */,
 				41888B271E7BF2FC0068EA86 /* prime.c */,
-				41888B2A1E7C3D130068EA86 /* bnhelpers.c */,
-				41888B2B1E7C3D130068EA86 /* bnhelpers.h */,
+				41888B2A1E7C3D130068EA86 /* bignum.c */,
+				41888B2B1E7C3D130068EA86 /* bignum.h */,
 				41E182391E823DB00094E85F /* list.h */,
 				41E1823A1E823DB00094E85F /* list.c */,
 				41CCBB661E835EF10075E4F1 /* rsa.c */,
@@ -149,7 +149,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				41888B2C1E7C3D130068EA86 /* bnhelpers.c in Sources */,
+				41888B2C1E7C3D130068EA86 /* bignum.c in Sources */,
 				41888B211E7BF2F00068EA86 /* main.c in Sources */,
 				41888B291E7BF2FC0068EA86 /* prime.c in Sources */,
 				41E1823B1E823DB00094E85F /* list.c in Sources */,
