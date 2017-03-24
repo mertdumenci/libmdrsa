@@ -11,15 +11,43 @@
 #include "prime.h"
 #include "rsa.h"
 
-extern void extendedEuclidean(const vU1024 *x, const vU1024 *y,
-                       vU1024 *d, vS1024 *a, vS1024 *b);
+vU1024 encodeString(char *string) {
+    size_t stringLength = strlen(string);
+    
+    vU1024 encodedString;
+    memset(&encodedString, 0, sizeof(vU1024));
+    memcpy(&encodedString, string, stringLength * sizeof(char));
+    ((char *)&encodedString)[stringLength] = '\0';
+    
+    return encodedString;
+}
+
+char *decodeString(vU1024 *encodedString) {
+    return (char *)encodedString;
+}
 
 int main(int argc, const char * argv[]) {
-    vU1024 pubE;
-    vU1024 pubN;
-    vS1024 privD;
+    MDRSAKeyPair keyPair;
+    generateKeys(&keyPair);
     
-    generateKeys(&pubE, &pubN, &privD);
+    char *stringPayload = "Testing RSA encryption. Yay!";
+    vU1024 payload = encodeString(stringPayload);
+    
+    vU1024 encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);
+    vU1024 decrypted = MDRSADecrypt(&encrypted, &keyPair);
+    
+    if (bignum_equal(&payload, &decrypted)) {
+        printf("Success! Initial payload and RSA encrypted -> decrypted "
+               "payload match.\n");
+        
+        char *encryptedString = malloc(sizeof(encrypted) + sizeof(char));
+        memcpy(encryptedString, &encrypted, sizeof(encrypted));
+        encryptedString[sizeof(encrypted) / sizeof(char)] = '\0';
+        
+        printf("Initial payload: %s\n", stringPayload);
+        printf("Encrypted payload: %s\n", encryptedString);
+        printf("Decrypted payload: %s\n", decodeString(&decrypted));
+    }
     
     return 0;
 }

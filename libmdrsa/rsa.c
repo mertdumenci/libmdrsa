@@ -47,7 +47,7 @@ void extendedEuclidean(const vU1024 *x, const vU1024 *y,
     *b = newB;
 }
 
-void generateKeys(vU1024 *pubE, vU1024 *pubN, vS1024 *privD) {
+void generateKeys(MDRSAKeyPair *keyPair) {
     vU1024 p = findPrime(kMDRSAPrimeLength);
     vU1024 q = findPrime(kMDRSAPrimeLength);
     vU1024 n;
@@ -82,31 +82,37 @@ void generateKeys(vU1024 *pubE, vU1024 *pubN, vS1024 *privD) {
     }
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconditional-uninitialized"
-    *pubE = e;
-    *pubN = n;
-    *privD = a;
-#pragma clang diagnostic pop
-    
-#ifdef DEBUG
     vS1024 signedPQ = bignum_signed(&pq);
-    vS1024 signedE = bignum_signed(&e);
     
-    vS1024 aTimesPQ;
-    vS1024HalfMultiply(&a, &signedPQ, &aTimesPQ);
-    
-    vS1024 bTimesE;
-    vS1024HalfMultiply(&b, &signedE, &bTimesE);
-    
-    vS1024 sum;
-    vS1024Add(&aTimesPQ, &bTimesE, &sum);
-    
-    vS1024 signedOne = bignum_signedFrom64(1);
-    if (!bignum_signedEqual(&sum, &signedOne)) {
-        printf("DEBUG: GENERATED KEYS INVALID, DOESN'T SATISFY BEZOUT'S"
-               "IDENTITY.");
-        exit(-1);
+    // Add k * pq to b to make it positive.
+    // (Observe that b (mod pq) = b + k * pq (mod pq).)
+    while (bignum_signedIsNegative(&b)) {
+        vS1024 newB;
+        vS1024Add(&b, &signedPQ, &newB);
+        b = newB;
     }
     
-    printf("DEBUG: Valid keys!\n");
-#endif
+    vU1024 unsignedB = bignum_unsigned(&b);
+    
+    MDRSAPublicKey public = { .e = e, .n = n };
+    MDRSAPrivateKey private = { .d = unsignedB };
+    
+    *keyPair = (MDRSAKeyPair){ .publicKey = public, .privateKey = private };
+#pragma clang diagnostic pop
+}
+
+vU1024 MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey) {
+    vU1024 encryptedPayload;
+    fastModuloPow(payload, &(publicKey->e), &(publicKey->n), &encryptedPayload);
+    
+    return encryptedPayload;
+}
+
+vU1024 MDRSADecrypt(vU1024 *encryptedPayload, MDRSAKeyPair *keyPair) {
+    vU1024 decryptedPayload;
+    fastModuloPow(encryptedPayload, &(keyPair->privateKey.d),
+                  &(keyPair->publicKey.n), &decryptedPayload);
+    
+    
+    return decryptedPayload;
 }

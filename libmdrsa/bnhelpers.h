@@ -23,5 +23,7 @@ vU1024 bignum_from64(uint64_t integer);
 vS1024 bignum_signedFrom64(int64_t integer);
 vU1024 bignum_rand(int digits);
 vS1024 bignum_signed(vU1024 *unsignedBignum);
+vU1024 bignum_unsigned(vS1024 *signedBignum);
+bool bignum_signedIsNegative(vS1024 *bignum);
 
 #endif /* bnhelpers_h */

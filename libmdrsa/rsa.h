@@ -12,6 +12,22 @@
 #include <stdio.h>
 #include "prime.h"
 
-void generateKeys(vU1024 *pubE, vU1024 *pubN, vS1024 *privD);
+typedef struct MDRSAPublicKey {
+    vU1024 e;
+    vU1024 n;
+} MDRSAPublicKey;
+
+typedef struct MDRSAPrivateKey {
+    vU1024 d;
+} MDRSAPrivateKey;
+
+typedef struct MDRSAKeyPair {
+    MDRSAPublicKey publicKey;
+    MDRSAPrivateKey privateKey;
+} MDRSAKeyPair;
+
+void generateKeys(MDRSAKeyPair *keyPair);
+vU1024 MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey);
+vU1024 MDRSADecrypt(vU1024 *encryptedPayload, MDRSAKeyPair *keyPair);
 
 #endif /* rsa_h */

@@ -66,7 +66,7 @@ char *bignum_toString(vU1024 *bignum) {
 }
 
 char *bignum_signedToString(vS1024 *bignum) {
-    bool isNegative = (bignum->s.MSW & 0x10000000) != 0;
+    bool isNegative = bignum_signedIsNegative(bignum);
     
     vU1024 positive;
     
@@ -131,4 +131,17 @@ vS1024 bignum_signed(vU1024 *unsignedBignum) {
     memcpy(&signedBignum, unsignedBignum, sizeof(vU1024));
     
     return signedBignum;
+}
+
+vU1024 bignum_unsigned(vS1024 *signedBignum) {
+    assert(!bignum_signedIsNegative(signedBignum));
+    
+    vU1024 unsignedBignum;
+    memcpy(&unsignedBignum, signedBignum, sizeof(vS1024));
+    
+    return unsignedBignum;
+}
+
+bool bignum_signedIsNegative(vS1024 *bignum) {
+    return (bignum->s.MSW & 0x10000000) != 0;
 }
