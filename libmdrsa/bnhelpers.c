@@ -104,7 +104,7 @@ vU1024 bignum_from64(uint64_t integer) {
 }
 
 vS1024 bignum_signedFrom64(int64_t integer) {
-    bool isNegative = integer & 0x1000000000000000;
+    bool isNegative = (integer < 0);
     
     vS1024 bignum;
     memset(&bignum, 0, sizeof(vS1024));
