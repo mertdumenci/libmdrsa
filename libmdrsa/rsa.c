@@ -101,18 +101,73 @@ void MDRSAGenerateKeys(MDRSAKeyPair *keyPair) {
 #pragma clang diagnostic pop
 }
 
-vU1024 MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey) {
+vU1024 _MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey) {
     vU1024 encryptedPayload;
-    MDRSAFastModuloPow(payload, &(publicKey->e), &(publicKey->n), &encryptedPayload);
+    MDRSAFastModuloPow(payload, &(publicKey->e), &(publicKey->n),
+                       &encryptedPayload);
     
     return encryptedPayload;
 }
 
-vU1024 MDRSADecrypt(vU1024 *encryptedPayload, MDRSAKeyPair *keyPair) {
+// We compute the chunk size to be the (prime length - 1) decimal digits
+// in bytes.
+//
+// e.g. If we're using 50 digit primes as keys, we're going to have
+// log_2(10^49) / 8 ~= 20 byte chunks.
+//
+// TODO: Declare the prime length in bytes. Digits are unnecessary and introduce
+// complexity/possible loss of precision.
+size_t _MDRSAChunkSize() {
+    int chunkSizeInBits = (int)((kMDRSAPrimeLength - 1) * (log(10) / log(2)));
+    return (chunkSizeInBits / 8);
+}
+
+int _MDRSANumberOfChunks(vU1024 *payload, MDRSAPublicKey *publicKey) {
+    return (int)ceil((double)MDRSABignumLengthInBytes(payload)
+                     / (double)_MDRSAChunkSize());
+}
+
+MDRSAEncryptedPayload MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey) {
+    int numOfChunks = _MDRSANumberOfChunks(payload, publicKey);
+    vU1024 *encryptedChunks = malloc(sizeof(vU1024) * numOfChunks);
+    char *payloadBytes = (char *)payload;
+    size_t chunkSize = _MDRSAChunkSize();
+    
+    for (int i = 0; i < numOfChunks; i++) {
+        vU1024 currentPayloadChunk;
+        memset(&currentPayloadChunk, 0, sizeof(currentPayloadChunk));
+        memcpy(&currentPayloadChunk, &payloadBytes[i * chunkSize],
+               _MDRSAChunkSize());
+        
+        vU1024 currentEncryptedChunk = _MDRSAEncrypt(&currentPayloadChunk,
+                                                     publicKey);
+        encryptedChunks[i] = currentEncryptedChunk;
+    }
+    
+    return (MDRSAEncryptedPayload){ .chunks = encryptedChunks,
+        .chunksLength = numOfChunks, .chunkSize = chunkSize };
+}
+
+vU1024 _MDRSADecrypt(vU1024 *encryptedPayload, MDRSAKeyPair *keyPair) {
     vU1024 decryptedPayload;
     MDRSAFastModuloPow(encryptedPayload, &(keyPair->privateKey.d),
-            &(keyPair->publicKey.n), &decryptedPayload);
+                       &(keyPair->publicKey.n), &decryptedPayload);
+
+    return decryptedPayload;
+}
+
+vU1024 MDRSADecrypt(MDRSAEncryptedPayload *encryptedPayload,
+                    MDRSAKeyPair *keyPair) {
+    vU1024 decryptedPayload;
+    char *decryptedPayloadBytes = (char *)&decryptedPayload;
+    memset(&decryptedPayload, 0, sizeof(vU1024));
     
+    for (int i = 0; i < encryptedPayload->chunksLength; i++) {
+        vU1024 currentChunk = encryptedPayload->chunks[i];
+        vU1024 decryptedChunk = _MDRSADecrypt(&currentChunk, keyPair);
+        memcpy(&decryptedPayloadBytes[i * encryptedPayload->chunkSize],
+               &decryptedChunk, encryptedPayload->chunkSize);
+    }
     
     return decryptedPayload;
 }

@@ -25,5 +25,6 @@ vU1024 MDRSABignumRand(int digits);
 vS1024 MDRSABignumCastSigned(vU1024 *unsignedBignum);
 vU1024 MDRSABignumCastUnsigned(vS1024 *signedBignum);
 bool MDRSABignumSignedIsNegative(vS1024 *bignum);
+size_t MDRSABignumLengthInBytes(vU1024 *bignum);
 
 #endif /* bignum_h */

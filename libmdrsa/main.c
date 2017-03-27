@@ -30,22 +30,16 @@ int main(int argc, const char * argv[]) {
     MDRSAKeyPair keyPair;
     MDRSAGenerateKeys(&keyPair);
     
-    char *stringPayload = "Hello world!";
+    char *stringPayload = "Hello world, this is something bigger.";
     vU1024 payload = encodeString(stringPayload);
     
-    vU1024 encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);
+    MDRSAEncryptedPayload encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);
     vU1024 decrypted = MDRSADecrypt(&encrypted, &keyPair);
     
     if (MDRSABignumEqual(&payload, &decrypted)) {
         printf("Success! Initial and roundtrip RSA payloads match.\n");
-        
-        // Treat 'encrypted' as a string for demonstration purposes
-        char *encryptedString = malloc(sizeof(encrypted) + sizeof(char));
-        memcpy(encryptedString, &encrypted, sizeof(encrypted));
-        encryptedString[sizeof(encrypted) / sizeof(char)] = '\0';
-        
+    
         printf("Initial payload: \"%s\"\n", stringPayload);
-        printf("Encrypted payload: \"%s\"\n", encryptedString);
         printf("Decrypted payload: \"%s\"\n", decodeString(&decrypted));
     }
     

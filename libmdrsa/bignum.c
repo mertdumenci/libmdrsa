@@ -145,3 +145,17 @@ vU1024 MDRSABignumCastUnsigned(vS1024 *signedBignum) {
 bool MDRSABignumSignedIsNegative(vS1024 *bignum) {
     return (bignum->s.MSW & 0x10000000) != 0;
 }
+
+size_t MDRSABignumLengthInBytes(vU1024 *bignum) {
+    char *bignumBytes = (char *)bignum;
+    
+    for (int i = sizeof(vU1024) / sizeof(char) - 1; i >= 0; i--) {
+        char currentByte = bignumBytes[i];
+        
+        if (currentByte != 0x0) {
+            return i + 1;
+        }
+    }
+    
+    return 0;
+}
