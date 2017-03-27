@@ -119,7 +119,7 @@ vS1024 MDRSABignumSignedFromInteger(int64_t integer) {
 }
 
 vU1024 MDRSABignumRand(int digits) {
-    int bits = (int)ceil((digits - 1) * log2(10));
+    int bits = (int)(digits * (log(10) / log(2)));
     vU1024 rand;
     memset(&rand, 0, sizeof(vU1024));
     arc4random_buf(&rand, bits / 8);
