@@ -12,6 +12,16 @@
 #include "rsa.h"
 
 vU1024 encodeString(char *string) {
+#ifdef DEBUG
+    printf("DEBUG: Encoded string is %lu characters long.\n", strlen(string));
+#endif
+    
+    if (strlen(string) > sizeof(vU1024) - 1) {
+        printf("Error, can't encode string \"%s\" into a 1024-bit integer.",
+               string);
+        exit(-1);
+    }
+    
     size_t stringLength = strlen(string);
     
     vU1024 encodedString;
@@ -30,7 +40,9 @@ int main(int argc, const char * argv[]) {
     MDRSAKeyPair keyPair;
     MDRSAGenerateKeys(&keyPair);
     
-    char *stringPayload = "Hello world, this is something bigger.";
+    char *stringPayload = "Hello world, this is something bigger. Chunking"
+    " should handle this relatively long payload.";
+    
     vU1024 payload = encodeString(stringPayload);
     
     MDRSAEncryptedPayload encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);

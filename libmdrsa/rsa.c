@@ -109,14 +109,16 @@ vU1024 _MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey) {
     return encryptedPayload;
 }
 
-// We compute the chunk size to be the (prime length - 1) decimal digits
-// in bytes.
-//
-// e.g. If we're using 50 digit primes as keys, we're going to have
-// log_2(10^49) / 8 ~= 20 byte chunks.
-//
-// TODO: Declare the prime length in bytes. Digits are unnecessary and introduce
-// complexity/possible loss of precision.
+/*
+    We compute the chunk size to be the (prime length - 1) decimal digits
+    in bytes.
+
+    e.g. If we're using 50 digit primes as keys, we're going to have
+        log_2(10^49) / 8 ~= 20 byte chunks.
+
+    TODO: Declare the prime length in bytes. Digits are unnecessary and introduce
+    complexity/possible loss of precision.
+*/
 size_t _MDRSAChunkSize() {
     int chunkSizeInBits = (int)((kMDRSAPrimeLength - 1) * (log(10) / log(2)));
     return (chunkSizeInBits / 8);
