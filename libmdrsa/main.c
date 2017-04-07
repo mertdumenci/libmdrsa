@@ -13,7 +13,9 @@
 
 vU1024 encodeString(char *string) {
 #ifdef DEBUG
+#ifndef BENCHMARK
     printf("DEBUG: Encoded string is %lu characters long.\n", strlen(string));
+#endif
 #endif
     
     if (strlen(string) > sizeof(vU1024) - 1) {
@@ -37,25 +39,39 @@ char *decodeString(vU1024 *encodedString) {
 }
 
 int main(int argc, const char * argv[]) {
-    MDRSAKeyPair keyPair;
-    MDRSAGenerateKeys(&keyPair);
+#ifdef BENCHMARK
+    uint64_t counter = 0;
     
-    char *stringPayload = "Hello world, this is something bigger. Chunking"
-    " should handle this relatively long payload.";
-    
-    vU1024 payload = encodeString(stringPayload);
-    
-    MDRSAEncryptedPayload encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);
-    vU1024 decrypted = MDRSADecrypt(&encrypted, &keyPair);
-    
-    if (MDRSABignumEqual(&payload, &decrypted)) {
-        printf("Success! Initial and roundtrip RSA payloads match.\n");
-    
-        printf("Initial payload: \"%s\"\n", stringPayload);
-        printf("Decrypted payload: \"%s\"\n", decodeString(&decrypted));
+    while (1) {
+#endif
+        MDRSAKeyPair keyPair;
+        MDRSAGenerateKeys(&keyPair);
+        
+        char *stringPayload = "Hello world, this is something bigger. Chunking"
+        " should handle this relatively long payload.";
+        
+        vU1024 payload = encodeString(stringPayload);
+        
+        MDRSAEncryptedPayload encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);
+        vU1024 decrypted = MDRSADecrypt(&encrypted, &keyPair);
+        
+        if (!MDRSABignumEqual(&payload, &decrypted)) {
+            printf("Fatal error: RSA failed. Plaintext & roundtrip data"
+                   " don't match.\n");
+            exit(-1);
+        }
+        
+        free(encrypted.chunks);
+        
+#ifdef BENCHMARK
+        // Print progress every 256 iterations
+        if ((counter & 0xFF) == 0) {
+            printf("%llu key generations & round trips\n", counter);
+        }
+        
+        counter += 1;
     }
-    
-    free(encrypted.chunks);
+#endif
     
     return 0;
 }
