@@ -87,6 +87,8 @@ char *MDRSABignumSignedToString(vS1024 *bignum) {
     strcpy(string + 1, positiveRepresentation);
     string[0] = '-';
     
+    free(positiveRepresentation);
+    
     return string;
 }
 

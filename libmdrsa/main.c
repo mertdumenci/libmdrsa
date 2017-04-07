@@ -55,5 +55,7 @@ int main(int argc, const char * argv[]) {
         printf("Decrypted payload: \"%s\"\n", decodeString(&decrypted));
     }
     
+    free(encrypted.chunks);
+    
     return 0;
 }
