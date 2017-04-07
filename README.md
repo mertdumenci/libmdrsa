@@ -17,18 +17,19 @@ usage.
 MDRSAKeyPair keyPair;
 MDRSAGenerateKeys(&keyPair);
 
-// `encodeString` is an omitted function that encodes a string in an instance
-// of the 1024-bit integer type `vU1024` (see bignum.h for `vU1024` helpers.)
 char *stringPayload = "Hello world!";
-vU1024 payload = encodeString(stringPayload);
 
 // Encrypt the payload using the generated public key
-MDRSAEncryptedPayload encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);
+MDRSAEncryptedPayload encrypted = MDRSAEncrypt(&payload,
+                                               &keyPair.publicKey,
+                                               &stringPayload,
+                                               strlen(stringPayload) + 1);
 
 // Decrypt the encrypted payload using the private key
-vU1024 decrypted = MDRSADecrypt(&encrypted, &keyPair);
+char *decryptedString;
+MDRSADecrypt(&encrypted, &keyPair, &decryptedString);
 
-// `encrypted` should equal `decrypted`!
+// `stringPayload` should equal `decryptedString`!
 ```
 
 ## Internals
