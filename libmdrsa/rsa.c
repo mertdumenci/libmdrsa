@@ -8,9 +8,12 @@
 
 #include "rsa.h"
 #include "bignum.h"
+#include <dispatch/dispatch.h>
 
 static int kMDRSAPrimeLength = 50;
 static int possibleEs[] = {3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41};
+
+static dispatch_queue_t kMDRSAKeyGenerationQueue;
 
 void _MDRSAExtendedEuclidean(const vU1024 *x, const vU1024 *y,
                        vU1024 *d, vS1024 *a, vS1024 *b) {
@@ -48,8 +51,24 @@ void _MDRSAExtendedEuclidean(const vU1024 *x, const vU1024 *y,
 }
 
 void MDRSAGenerateKeys(MDRSAKeyPair *keyPair) {
-    vU1024 p = MDRSAFindPrime(kMDRSAPrimeLength);
-    vU1024 q = MDRSAFindPrime(kMDRSAPrimeLength);
+    if (kMDRSAKeyGenerationQueue == NULL) {
+        kMDRSAKeyGenerationQueue =
+            dispatch_queue_create("me.dumenci.rsa.keygeneration",
+                                  DISPATCH_QUEUE_CONCURRENT);
+    }
+    
+    __block vU1024 p;
+    __block vU1024 q;
+    
+    dispatch_group_t keyGroup = dispatch_group_create();
+    dispatch_group_async(keyGroup, kMDRSAKeyGenerationQueue, ^{
+        p = MDRSAFindPrime(kMDRSAPrimeLength);
+    });
+    dispatch_group_async(keyGroup, kMDRSAKeyGenerationQueue, ^{
+        q = MDRSAFindPrime(kMDRSAPrimeLength);
+    });
+    dispatch_group_wait(keyGroup, DISPATCH_TIME_FOREVER);
+
     vU1024 n;
     
     vU1024HalfMultiply(&p, &q, &n);
