@@ -20,7 +20,6 @@
     for an algorithm that makes use of this to test for primality with high
     confidence.
  */
-bool _MDRSAFermatPrimalityTest(vU1024 *a, vU1024 *p) {
 static bool _MDRSAFermatPrimalityTest(vU1024 *a, vU1024 *p) {
     vU1024 result;
     vU1024 power;
@@ -114,15 +113,18 @@ vU1024 MDRSAPrimeBound(int numDigits) {
 
 vU1024 MDRSAFindPrime(int numDigits) {
     vU1024 primeBound = MDRSAPrimeBound(numDigits);
+    vU1024 one = MDRSABignumFromInteger(1);
     
-    while (testCounter > 0) {
+    while (!MDRSABignumIsZero(&primeBound)) {
         vU1024 candidate = MDRSABignumRand(numDigits);
         
         if (MDRSAFermatPrimalityTest(&candidate, numDigits)) {
             return candidate;
         }
         
-        testCounter -= 1;
+        vU1024 newPrimeBound;
+        vU1024Sub(&primeBound, &one, &newPrimeBound);
+        primeBound = newPrimeBound;
     }
     
     printf("Fatal error, cannot generate prime");
