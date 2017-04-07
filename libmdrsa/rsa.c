@@ -10,7 +10,7 @@
 #include "bignum.h"
 
 static int kMDRSAPrimeLength = 50;
-static int possibleEs[] = {3, 5, 7, 11, 13, 17};
+static int possibleEs[] = {3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41};
 
 void _MDRSAExtendedEuclidean(const vU1024 *x, const vU1024 *y,
                        vU1024 *d, vS1024 *a, vS1024 *b) {

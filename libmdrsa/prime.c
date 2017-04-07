@@ -21,6 +21,7 @@
     confidence.
  */
 bool _MDRSAFermatPrimalityTest(vU1024 *a, vU1024 *p) {
+static bool _MDRSAFermatPrimalityTest(vU1024 *a, vU1024 *p) {
     vU1024 result;
     vU1024 power;
 
@@ -34,7 +35,7 @@ bool _MDRSAFermatPrimalityTest(vU1024 *a, vU1024 *p) {
 
 void MDRSAFastModuloPow(vU1024 *base, vU1024 *power,
         vU1024 *modulo, vU1024 *result) {
-    bool willDoModulo = !MDRSABignumIsZero(modulo);
+    bool willDoModulo = (modulo == NULL) ? false : !MDRSABignumIsZero(modulo);
     vU1024 internalResult = MDRSABignumFromInteger(1);
     vU1024 internalPower;
     vU1024 internalBase;
@@ -92,8 +93,27 @@ bool MDRSAFermatPrimalityTest(vU1024 *candidate, int numDigits) {
     return true;
 }
 
+vU1024 MDRSAPrimeBound(int numDigits) {
+    // The Prime Number Theorem tells us that there's approximately n/log(n)
+    // primes up to n. If our random function is truly
+    // uniform, if we try >= n/log(n) numbers, we're going to hit a prime.
+    vU1024 ten = MDRSABignumFromInteger(10);
+    vU1024 power = MDRSABignumFromInteger(numDigits);
+    vU1024 max;
+    MDRSAFastModuloPow(&ten, &power, NULL, &max);
+    
+    // Finding ln(n) from log_10(n)
+    vU1024 lnN = MDRSABignumFromInteger((int)floor(numDigits / log10(M_E)));
+    
+    vU1024 primeBound;
+    vU1024 remainder;
+    vU1024Divide(&max, &lnN, &primeBound, &remainder);
+    
+    return primeBound;
+}
+
 vU1024 MDRSAFindPrime(int numDigits) {
-    int testCounter = numDigits * (numDigits / 2);
+    vU1024 primeBound = MDRSAPrimeBound(numDigits);
     
     while (testCounter > 0) {
         vU1024 candidate = MDRSABignumRand(numDigits);
