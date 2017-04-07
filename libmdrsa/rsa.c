@@ -143,22 +143,29 @@ size_t _MDRSAChunkSize() {
     return (chunkSizeInBits / 8);
 }
 
-int _MDRSANumberOfChunks(vU1024 *payload, MDRSAPublicKey *publicKey) {
-    return (int)ceil((double)MDRSABignumLengthInBytes(payload)
-                     / (double)_MDRSAChunkSize());
+int _MDRSANumberOfChunks(size_t data_len, MDRSAPublicKey *publicKey) {
+    return (int)ceil(data_len / (double)_MDRSAChunkSize());
 }
 
-MDRSAEncryptedPayload MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey) {
-    int numOfChunks = _MDRSANumberOfChunks(payload, publicKey);
+MDRSAEncryptedPayload MDRSAEncrypt(void *payload, size_t data_len,
+                                   MDRSAPublicKey *publicKey) {
+    if (data_len == 0) {
+        return (MDRSAEncryptedPayload){};
+    }
+    
+    int numOfChunks = _MDRSANumberOfChunks(data_len, publicKey);
     vU1024 *encryptedChunks = malloc(sizeof(vU1024) * numOfChunks);
     char *payloadBytes = (char *)payload;
     size_t chunkSize = _MDRSAChunkSize();
     
     for (int i = 0; i < numOfChunks; i++) {
+        size_t applicableChunkSize = MIN(data_len - (i * chunkSize),
+                                         chunkSize);
+        
         vU1024 currentPayloadChunk;
         memset(&currentPayloadChunk, 0, sizeof(currentPayloadChunk));
         memcpy(&currentPayloadChunk, &payloadBytes[i * chunkSize],
-               _MDRSAChunkSize());
+               applicableChunkSize);
         
         vU1024 currentEncryptedChunk = _MDRSAEncrypt(&currentPayloadChunk,
                                                      publicKey);
@@ -166,7 +173,8 @@ MDRSAEncryptedPayload MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey) {
     }
     
     return (MDRSAEncryptedPayload){ .chunks = encryptedChunks,
-        .chunksLength = numOfChunks, .chunkSize = chunkSize };
+        .chunksLength = numOfChunks, .chunkSize = chunkSize,
+        .dataLength = data_len };
 }
 
 vU1024 _MDRSADecrypt(vU1024 *encryptedPayload, MDRSAKeyPair *keyPair) {
@@ -177,18 +185,20 @@ vU1024 _MDRSADecrypt(vU1024 *encryptedPayload, MDRSAKeyPair *keyPair) {
     return decryptedPayload;
 }
 
-vU1024 MDRSADecrypt(MDRSAEncryptedPayload *encryptedPayload,
-                    MDRSAKeyPair *keyPair) {
-    vU1024 decryptedPayload;
-    char *decryptedPayloadBytes = (char *)&decryptedPayload;
-    memset(&decryptedPayload, 0, sizeof(vU1024));
+void MDRSADecrypt(MDRSAEncryptedPayload *encryptedPayload,
+                  MDRSAKeyPair *keyPair,
+                  void **decryptedData) {
+    *decryptedData = malloc(encryptedPayload->dataLength);
+    char *_decryptedData = (char *)*decryptedData;
     
     for (int i = 0; i < encryptedPayload->chunksLength; i++) {
+        size_t applicableChunkSize = MIN(encryptedPayload->dataLength
+                                            - (i * encryptedPayload->chunkSize),
+                                         encryptedPayload->chunkSize);
+        
         vU1024 currentChunk = encryptedPayload->chunks[i];
         vU1024 decryptedChunk = _MDRSADecrypt(&currentChunk, keyPair);
-        memcpy(&decryptedPayloadBytes[i * encryptedPayload->chunkSize],
-               &decryptedChunk, encryptedPayload->chunkSize);
+        memcpy(&_decryptedData[i * encryptedPayload->chunkSize],
+               &decryptedChunk, applicableChunkSize);
     }
-    
-    return decryptedPayload;
 }

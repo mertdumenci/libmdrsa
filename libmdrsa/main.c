@@ -11,31 +11,28 @@
 #include "prime.h"
 #include "rsa.h"
 
-vU1024 encodeString(char *string) {
-#ifdef DEBUG
-#ifndef BENCHMARK
-    printf("DEBUG: Encoded string is %lu characters long.\n", strlen(string));
-#endif
-#endif
-    
-    if (strlen(string) > sizeof(vU1024) - 1) {
-        printf("Error, can't encode string \"%s\" into a 1024-bit integer.",
-               string);
-        exit(-1);
+//#define BENCHMARK
+
+static long _MDRSALoadTextFile(char *filename, char **text) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        *text = NULL;
+        return -1;
     }
     
-    size_t stringLength = strlen(string);
+    fseek(file, 0, SEEK_END);
+    size_t size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    *text = (char *)malloc(size + 1);
+    if (size != fread(*text, sizeof(char), size, file)) {
+        free(*text);
+        return -1;
+    }
     
-    vU1024 encodedString;
-    memset(&encodedString, 0, sizeof(vU1024));
-    memcpy(&encodedString, string, stringLength * sizeof(char));
-    ((char *)&encodedString)[stringLength] = '\0';
+    fclose(file);
+    (*text)[size] = '\0';
     
-    return encodedString;
-}
-
-char *decodeString(vU1024 *encodedString) {
-    return (char *)encodedString;
+    return size;
 }
 
 int main(int argc, const char * argv[]) {
@@ -47,15 +44,21 @@ int main(int argc, const char * argv[]) {
         MDRSAKeyPair keyPair;
         MDRSAGenerateKeys(&keyPair);
         
-        char *stringPayload = "Hello world, this is something bigger. Chunking"
-        " should handle this relatively long payload.";
+        char *testText;
+        long testTextLen = 0;
+        if ((testTextLen = _MDRSALoadTextFile("test_plaintext.txt", &testText))
+                < 0) {
+            printf("Fatal error: couldn't read test file.\n");
+            exit(-1);
+        }
         
-        vU1024 payload = encodeString(stringPayload);
+        MDRSAEncryptedPayload encrypted = MDRSAEncrypt(testText,
+                                                       testTextLen + 1,
+                                                       &keyPair.publicKey);
+        char *decrypted;
+        MDRSADecrypt(&encrypted, &keyPair, (void **)&decrypted);
         
-        MDRSAEncryptedPayload encrypted = MDRSAEncrypt(&payload, &keyPair.publicKey);
-        vU1024 decrypted = MDRSADecrypt(&encrypted, &keyPair);
-        
-        if (!MDRSABignumEqual(&payload, &decrypted)) {
+        if (strcmp(testText, decrypted) != 0) {
             printf("Fatal error: RSA failed. Plaintext & roundtrip data"
                    " don't match.\n");
             exit(-1);

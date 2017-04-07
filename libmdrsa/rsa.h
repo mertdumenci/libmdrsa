@@ -30,11 +30,14 @@ typedef struct MDRSAEncryptedPayload {
     vU1024 *chunks;
     int chunksLength;
     size_t chunkSize;
+    size_t dataLength;
 } MDRSAEncryptedPayload;
 
 void MDRSAGenerateKeys(MDRSAKeyPair *keyPair);
-MDRSAEncryptedPayload MDRSAEncrypt(vU1024 *payload, MDRSAPublicKey *publicKey);
-vU1024 MDRSADecrypt(MDRSAEncryptedPayload *encryptedPayload,
-                    MDRSAKeyPair *keyPair);
+MDRSAEncryptedPayload MDRSAEncrypt(void *payload, size_t data_len,
+                                   MDRSAPublicKey *publicKey);
+void MDRSADecrypt(MDRSAEncryptedPayload *encryptedPayload,
+                  MDRSAKeyPair *keyPair,
+                  void **decryptedData);
 
 #endif /* rsa_h */
