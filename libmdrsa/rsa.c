@@ -14,6 +14,8 @@ static int kMDRSAPrimeLength = 50;
 static int possibleEs[] = {3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41};
 
 static dispatch_queue_t kMDRSAKeyGenerationQueue;
+static dispatch_queue_t kMDRSAEncryptionQueue;
+static dispatch_queue_t kMDRSADecryptionQueue;
 
 void _MDRSAExtendedEuclidean(const vU1024 *x, const vU1024 *y,
                        vU1024 *d, vS1024 *a, vS1024 *b) {
@@ -153,12 +155,18 @@ MDRSAEncryptedPayload MDRSAEncrypt(void *payload, size_t data_len,
         return (MDRSAEncryptedPayload){};
     }
     
+    if (kMDRSAEncryptionQueue == NULL) {
+        kMDRSAEncryptionQueue =
+        dispatch_queue_create("me.dumenci.rsa.encryption",
+                              DISPATCH_QUEUE_CONCURRENT);
+    }
+    
     int numOfChunks = _MDRSANumberOfChunks(data_len, publicKey);
     vU1024 *encryptedChunks = malloc(sizeof(vU1024) * numOfChunks);
     char *payloadBytes = (char *)payload;
     size_t chunkSize = _MDRSAChunkSize();
     
-    for (int i = 0; i < numOfChunks; i++) {
+    dispatch_apply(numOfChunks, kMDRSAEncryptionQueue, ^(size_t i) {
         size_t applicableChunkSize = MIN(data_len - (i * chunkSize),
                                          chunkSize);
         
@@ -170,7 +178,7 @@ MDRSAEncryptedPayload MDRSAEncrypt(void *payload, size_t data_len,
         vU1024 currentEncryptedChunk = _MDRSAEncrypt(&currentPayloadChunk,
                                                      publicKey);
         encryptedChunks[i] = currentEncryptedChunk;
-    }
+    });
     
     return (MDRSAEncryptedPayload){ .chunks = encryptedChunks,
         .chunksLength = numOfChunks, .chunkSize = chunkSize,
@@ -188,17 +196,23 @@ vU1024 _MDRSADecrypt(vU1024 *encryptedPayload, MDRSAKeyPair *keyPair) {
 void MDRSADecrypt(MDRSAEncryptedPayload *encryptedPayload,
                   MDRSAKeyPair *keyPair,
                   void **decryptedData) {
+    if (kMDRSADecryptionQueue == NULL) {
+        kMDRSADecryptionQueue =
+        dispatch_queue_create("me.dumenci.rsa.decryption",
+                              DISPATCH_QUEUE_CONCURRENT);
+    }
+    
     *decryptedData = malloc(encryptedPayload->dataLength);
     char *_decryptedData = (char *)*decryptedData;
     
-    for (int i = 0; i < encryptedPayload->chunksLength; i++) {
+    dispatch_apply(encryptedPayload->chunksLength, kMDRSADecryptionQueue, ^(size_t i) {
         size_t applicableChunkSize = MIN(encryptedPayload->dataLength
-                                            - (i * encryptedPayload->chunkSize),
+                                         - (i * encryptedPayload->chunkSize),
                                          encryptedPayload->chunkSize);
         
         vU1024 currentChunk = encryptedPayload->chunks[i];
         vU1024 decryptedChunk = _MDRSADecrypt(&currentChunk, keyPair);
         memcpy(&_decryptedData[i * encryptedPayload->chunkSize],
                &decryptedChunk, applicableChunkSize);
-    }
+    });
 }
