@@ -52,7 +52,7 @@ char *MDRSABignumToString(vU1024 *bignum) {
         list_push(digitList, intDigit);
     }
     
-    char *string = malloc(list_length(digitList) * sizeof(int));
+    char *string = malloc(list_length(digitList) * sizeof(char));
     
     int index = 0;
     list_each_r(digitList, currentDigit) {
@@ -95,6 +95,7 @@ char *MDRSABignumSignedToString(vS1024 *bignum) {
 void MDRSABignumPrint(vU1024 *bignum) {
     char *string = MDRSABignumToString(bignum);
     printf("%s\n", string);
+    free(string);
 }
 
 vU1024 MDRSABignumFromInteger(uint64_t integer) {

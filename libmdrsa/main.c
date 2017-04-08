@@ -65,6 +65,7 @@ int main(int argc, const char * argv[]) {
         }
         
         free(encrypted.chunks);
+        free(decrypted);
         
 #ifdef BENCHMARK
         // Print progress every 256 iterations
