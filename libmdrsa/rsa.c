@@ -70,6 +70,7 @@ void MDRSAGenerateKeys(MDRSAKeyPair *keyPair) {
         q = MDRSAFindPrime(kMDRSAPrimeLength);
     });
     dispatch_group_wait(keyGroup, DISPATCH_TIME_FOREVER);
+    dispatch_release(keyGroup);
 
     vU1024 n;
     
