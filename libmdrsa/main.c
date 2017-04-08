@@ -11,7 +11,7 @@
 #include "prime.h"
 #include "rsa.h"
 
-//#define BENCHMARK
+#define BENCHMARK
 
 static long _MDRSALoadTextFile(char *filename, char **text) {
     FILE *file = fopen(filename, "r");
@@ -39,19 +39,19 @@ int main(int argc, const char * argv[]) {
 #ifdef BENCHMARK
     uint64_t counter = 0;
     
+    char *testText;
+    long testTextLen = 0;
+    if ((testTextLen = _MDRSALoadTextFile("test_plaintext.txt", &testText))
+        < 0) {
+        printf("Fatal error: couldn't read test file.\n");
+        exit(-1);
+    }
+    
+    MDRSAKeyPair keyPair;
+    MDRSAGenerateKeys(&keyPair);
+    
     while (1) {
 #endif
-        MDRSAKeyPair keyPair;
-        MDRSAGenerateKeys(&keyPair);
-        
-        char *testText;
-        long testTextLen = 0;
-        if ((testTextLen = _MDRSALoadTextFile("test_plaintext.txt", &testText))
-                < 0) {
-            printf("Fatal error: couldn't read test file.\n");
-            exit(-1);
-        }
-        
         MDRSAEncryptedPayload encrypted = MDRSAEncrypt(testText,
                                                        testTextLen + 1,
                                                        &keyPair.publicKey);
@@ -68,10 +68,7 @@ int main(int argc, const char * argv[]) {
         free(decrypted);
         
 #ifdef BENCHMARK
-        // Print progress every 256 iterations
-        if ((counter & 0xFF) == 0) {
-            printf("%llu key generations & round trips\n", counter);
-        }
+        printf("%llu round trips\n", counter);
         
         counter += 1;
     }
